@@ -1,0 +1,69 @@
+/*
+ * Copyright (c) 2016 by Gerrit Grunwald
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.root{
+    -fx-background                 : rgb(51, 51, 51);
+    -fx-text-fill                  : -text-dark;
+    -fx-prompt-text-fill           : rgba(255, 255, 255, 0.3);
+
+    -text-disabled                 : -text-disabled-dark;
+    -background-disabled           :rgba(255, 255, 255, 0.12);
+    -background-fill               : -text-dark;
+
+    -flat-button-hover-background  : rgba(204, 204, 204, 0.15);
+    -flat-button-pressed-background: rgba(204, 204, 204, 0.25);
+    -flat-button-disabled-fill     : rgba(255, 255, 255, 0.3);
+}
+
+.text-field {
+    -fx-text-fill: lightgrey;
+}
+
+.current-location {
+    -marker-fill: #ff9800;
+    -fx-fill    : linear-gradient(to top, -marker-fill, derive(-marker-fill, 50%));
+    -fx-stroke  : derive(-marker-fill, -20%);
+}
+
+.my-marker {
+    -marker-fill: #f44336;
+    -fx-fill    : linear-gradient(to top, -marker-fill, derive(-marker-fill, 50%));
+    -fx-stroke  : derive(-marker-fill, -20%);
+}
+
+.active-marker {
+    -marker-fill: #3f51b5;
+    -fx-fill    : linear-gradient(to top, -marker-fill, derive(-marker-fill, 50%));
+    -fx-stroke  : derive(-marker-fill, -20%);
+}
+
+.old-marker {
+    -marker-fill: #9e9e9e;
+    -fx-fill    : linear-gradient(to top, -marker-fill, derive(-marker-fill, 50%));
+    -fx-stroke  : derive(-marker-fill, -20%);
+}
+
+.last-update {
+    -fx-font-size: 10;
+    -fx-padding  : 1 0 1 16;
+}
+
+.distance {
+    -fx-background-color  : #4caf50;
+    -fx-padding           : 1 3 1 3;
+    -fx-background-radius : 4;
+    -fx-text-fill         : white;
+}
