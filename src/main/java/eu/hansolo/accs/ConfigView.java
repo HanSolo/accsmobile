@@ -30,6 +30,7 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 
 import java.io.File;
 import java.io.FileReader;
@@ -100,10 +101,15 @@ public class ConfigView extends View {
         gridPane.add(urlLabel, 0, 0);
         gridPane.add(urlField, 1, 0);
 
+        GridPane.setHgrow(urlField, Priority.ALWAYS);
+
         gridPane.add(nameLabel, 0, 1);
         gridPane.add(nameField, 1, 1);
 
+        GridPane.setHgrow(nameField, Priority.ALWAYS);
+
         gridPane.setAlignment(Pos.CENTER);
+
 
         setFieldsFromProperties();
 

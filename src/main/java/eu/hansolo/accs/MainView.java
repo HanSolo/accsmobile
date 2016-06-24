@@ -89,7 +89,7 @@ public class MainView extends View {
         properties = createProperties();
         retrieveConfig();
 
-        init();
+        initGraphics();
         registerListeners();
 
         setBackground(new Background(new BackgroundFill(Main.BACKGROUND_COLOR, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -101,7 +101,7 @@ public class MainView extends View {
         updateLocations();
     }
 
-    private void init() {
+    private void initGraphics() {
         firstStart = true;
 
         MY_LOCATION.setId(properties.getProperty("name"));
@@ -180,7 +180,7 @@ public class MainView extends View {
 
         AnchorPane.setTopAnchor(mapView, 0d);
         AnchorPane.setRightAnchor(mapView, 0d);
-        AnchorPane.setBottomAnchor(mapView, 200d);
+        AnchorPane.setBottomAnchor(mapView, 160d);
         AnchorPane.setLeftAnchor(mapView, 0d);
 
         AnchorPane.setRightAnchor(buttonBox, 0d);
