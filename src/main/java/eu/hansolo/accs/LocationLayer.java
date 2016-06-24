@@ -49,6 +49,7 @@ public class LocationLayer extends MapLayer {
             if (POINTS.get(i).getKey().equals(POINT)) {
                 POINT.removeMapPointEventListener(pointEventListener);
                 POINTS.remove(i);
+                markDirty();
                 break;
             }
         }

@@ -1,6 +1,7 @@
 package eu.hansolo.accs;
 
 import com.gluonhq.charm.down.common.PlatformFactory;
+import com.gluonhq.charm.down.common.Position;
 import com.gluonhq.charm.down.common.PositionService;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.Icon;
@@ -214,7 +215,7 @@ public class MainView extends View {
     }
 
     @Override protected void updateAppBar(AppBar appBar) {
-        appBar.setTitleText("ACCS");
+        appBar.setTitleText("ShareLoc");
         appBar.getActionItems().add(MaterialDesignIcon.SETTINGS.button(e -> getApplication().switchView(Main.CONFIG_VIEW)));
     }
 

@@ -75,7 +75,7 @@ public class ConfigView extends View {
     }
 
     @Override protected void updateAppBar(AppBar appBar) {
-        appBar.setTitleText("ACCS Config");
+        appBar.setTitleText("ShareLoc Config");
         appBar.getActionItems().add(MaterialDesignIcon.ARROW_BACK.button(e -> {
             saveConfig();
             getApplication().switchView(Main.MAIN_VIEW);
