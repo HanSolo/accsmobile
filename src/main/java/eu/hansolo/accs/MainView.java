@@ -12,7 +12,15 @@ import com.gluonhq.charm.glisten.visual.SwatchElement;
 import com.gluonhq.maps.MapPoint;
 import com.gluonhq.maps.MapView;
 import eu.hansolo.accs.transitions.SlideInLeftTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -37,6 +45,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.util.Callback;
+import javafx.util.Duration;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -65,15 +74,20 @@ public class MainView extends View {
     private static final JMapPoint                 MY_LOCATION = new JMapPoint("", 0, 0);
     private static final Circle                    MY_MARKER   = new Circle(10);
     private              PositionService           positionService;
+    private              ChangeListener<Position>  positionChangeListener;
     private              LocationLayer             locationLayer;
     private              MapView                   mapView;
     private              Button                    updateButton;
+    private              HBox                      buttonBox;
+    private              Button                    backToListButton;
     private              ObservableList<JMapPoint> locationList;
     private              ListView<JMapPoint>       listView;
     private              AnchorPane                mainPane;
     private              boolean                   firstStart;
     private              File                      localStoragePath;
     private              Properties                properties;
+    private              Timeline                  timeline;
+    private              DoubleProperty            anchorY;
     private volatile     ScheduledFuture<?>        updateTask;
     private static       ScheduledExecutorService  periodicUpdateExecutorService;
 
@@ -89,6 +103,16 @@ public class MainView extends View {
         }
         properties = createProperties();
         retrieveConfig();
+        timeline = new Timeline();
+        anchorY = new SimpleDoubleProperty(160);
+        positionChangeListener = (o, ov, nv) -> {
+            MY_LOCATION.update(nv.getLatitude(), nv.getLongitude());
+            if (firstStart) {
+                mapView.setCenter(nv.getLatitude(), nv.getLongitude());
+                firstStart = false;
+                addMyLocation();
+            }
+        };
 
         initGraphics();
         registerListeners();
@@ -110,6 +134,9 @@ public class MainView extends View {
 
         positionService = PlatformFactory.getPlatform().getPositionService();
 
+        backToListButton = MaterialDesignIcon.ARROW_BACK.button(e -> showList());
+        backToListButton.setVisible(false);
+
         locationLayer = new LocationLayer();
         locationLayer.addPoint(MY_LOCATION, MY_MARKER);
 
@@ -123,7 +150,7 @@ public class MainView extends View {
         updateButton.setAlignment(Pos.CENTER);
         updateButton.setGraphic(new Icon(MaterialDesignIcon.SHARE));
 
-        HBox buttonBox = new HBox(updateButton);
+        buttonBox = new HBox(updateButton);
         buttonBox.setPrefHeight(40);
         buttonBox.setMinHeight(40);
         buttonBox.setMaxHeight(40);
@@ -194,21 +221,16 @@ public class MainView extends View {
     }
 
     private void registerListeners() {
-        positionService.positionProperty().addListener((o, ov, nv) -> {
-            MY_LOCATION.update(nv.getLatitude(), nv.getLongitude());
-            if (firstStart) {
-                mapView.setCenter(nv.getLatitude(), nv.getLongitude());
-                firstStart = false;
-                addMyLocation();
-            }
-        });
+        positionService.positionProperty().addListener(positionChangeListener);
 
         mapView.setOnZoomStarted(e -> mapView.removeLayer(locationLayer));
         mapView.setOnZoomFinished(e -> mapView.addLayer(locationLayer));
 
+        anchorY.addListener(o -> AnchorPane.setBottomAnchor(mapView, anchorY.getValue()));
+
         listView.getSelectionModel().selectedItemProperty().addListener((o, ov, nv) -> {
             if (null == nv) return;
-            mapView.flyTo(1., new MapPoint(nv.getLatitude(), nv.getLongitude()), 2.5);
+            hideList(nv);
         });
 
         updateButton.setOnAction(e -> shareMyLocation());
@@ -216,7 +238,7 @@ public class MainView extends View {
 
     @Override protected void updateAppBar(AppBar appBar) {
         appBar.setTitleText("ShareLoc");
-        appBar.getActionItems().add(MaterialDesignIcon.SETTINGS.button(e -> getApplication().switchView(Main.CONFIG_VIEW)));
+        appBar.getActionItems().addAll(backToListButton, MaterialDesignIcon.SETTINGS.button(e -> getApplication().switchView(Main.CONFIG_VIEW)));
     }
 
     private void addMyLocation() {
@@ -256,6 +278,12 @@ public class MainView extends View {
 
         task.stateProperty().addListener((o, ov, nv) -> {
             if (State.SUCCEEDED == nv) {
+                // test
+                positionService.positionProperty().removeListener(positionChangeListener);
+                positionService = PlatformFactory.getPlatform().getPositionService();
+                positionService.positionProperty().addListener(positionChangeListener);
+                // test
+
                 locationList.clear();
                 JSONArray jsonArray = task.getValue();
                 for (int i = 0 ; i < jsonArray.size() ; i++) { locationList.add(new JMapPoint(((JSONObject) jsonArray.get(i)))); }
@@ -278,6 +306,40 @@ public class MainView extends View {
             }});
 
         new Thread(task).start();
+    }
+
+    private void hideList(final JMapPoint MAP_POINT) {
+        KeyValue kvListView0  = new KeyValue(listView.translateYProperty(), 0);
+        KeyValue kvListView1  = new KeyValue(listView.translateYProperty(), 120);
+        KeyValue kvButtonBox0 = new KeyValue(buttonBox.translateYProperty(), 0);
+        KeyValue kvButtonBox1 = new KeyValue(buttonBox.translateYProperty(), 120);
+        KeyValue kvAnchorY0   = new KeyValue(anchorY, 160);
+        KeyValue kvAnchorY1   = new KeyValue(anchorY, 40);
+
+        KeyFrame kf0 = new KeyFrame(Duration.ZERO, kvListView0, kvButtonBox0, kvAnchorY0);
+        KeyFrame kf1 = new KeyFrame(Duration.millis(50), kvListView1, kvButtonBox1, kvAnchorY1);
+
+        timeline.getKeyFrames().setAll(kf0, kf1);
+        timeline.setOnFinished(e -> {
+            mapView.flyTo(1., new MapPoint(MAP_POINT.getLatitude(), MAP_POINT.getLongitude()), 2.5);
+            backToListButton.setVisible(true);
+        });
+        timeline.play();
+    }
+    private void showList() {
+        KeyValue kvListView0  = new KeyValue(listView.translateYProperty(), 120);
+        KeyValue kvListView1  = new KeyValue(listView.translateYProperty(), 0);
+        KeyValue kvButtonBox0 = new KeyValue(buttonBox.translateYProperty(), 120);
+        KeyValue kvButtonBox1 = new KeyValue(buttonBox.translateYProperty(), 0);
+        KeyValue kvAnchorY0   = new KeyValue(anchorY, 40);
+        KeyValue kvAnchorY1   = new KeyValue(anchorY, 160);
+
+        KeyFrame kf0 = new KeyFrame(Duration.ZERO, kvListView0, kvButtonBox0, kvAnchorY0);
+        KeyFrame kf1 = new KeyFrame(Duration.millis(50), kvListView1, kvButtonBox1, kvAnchorY1);
+
+        timeline.getKeyFrames().setAll(kf0, kf1);
+        timeline.setOnFinished(e -> backToListButton.setVisible(false));
+        timeline.play();
     }
 
     private Properties createProperties() {
