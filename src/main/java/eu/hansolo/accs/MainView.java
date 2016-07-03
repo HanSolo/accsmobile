@@ -16,9 +16,8 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -80,6 +79,7 @@ public class MainView extends View {
     private              Button                    updateButton;
     private              HBox                      buttonBox;
     private              Button                    backToListButton;
+    private              Button                    settingsButton;
     private              ObservableList<JMapPoint> locationList;
     private              ListView<JMapPoint>       listView;
     private              AnchorPane                mainPane;
@@ -106,9 +106,11 @@ public class MainView extends View {
         timeline = new Timeline();
         anchorY = new SimpleDoubleProperty(160);
         positionChangeListener = (o, ov, nv) -> {
-            MY_LOCATION.update(nv.getLatitude(), nv.getLongitude());
+            ReadOnlyObjectProperty<Position> positionProperty = positionService.positionProperty();
+            Position pos = positionProperty.get();
+            MY_LOCATION.update(pos.getLatitude(), pos.getLongitude());
             if (firstStart) {
-                mapView.setCenter(nv.getLatitude(), nv.getLongitude());
+                mapView.setCenter(pos.getLatitude(), pos.getLongitude());
                 firstStart = false;
                 addMyLocation();
             }
@@ -136,6 +138,8 @@ public class MainView extends View {
 
         backToListButton = MaterialDesignIcon.ARROW_BACK.button(e -> showList());
         backToListButton.setVisible(false);
+
+        settingsButton = MaterialDesignIcon.SETTINGS.button(e -> getApplication().switchView(Main.CONFIG_VIEW));
 
         locationLayer = new LocationLayer();
         locationLayer.addPoint(MY_LOCATION, MY_MARKER);
@@ -221,8 +225,6 @@ public class MainView extends View {
     }
 
     private void registerListeners() {
-        positionService.positionProperty().addListener(positionChangeListener);
-
         mapView.setOnZoomStarted(e -> mapView.removeLayer(locationLayer));
         mapView.setOnZoomFinished(e -> mapView.addLayer(locationLayer));
 
@@ -234,11 +236,13 @@ public class MainView extends View {
         });
 
         updateButton.setOnAction(e -> shareMyLocation());
+
+        if (positionService != null) { positionService.positionProperty().addListener(positionChangeListener); }
     }
 
     @Override protected void updateAppBar(AppBar appBar) {
         appBar.setTitleText("ShareLoc");
-        appBar.getActionItems().addAll(backToListButton, MaterialDesignIcon.SETTINGS.button(e -> getApplication().switchView(Main.CONFIG_VIEW)));
+        appBar.getActionItems().addAll(backToListButton, settingsButton);
     }
 
     private void addMyLocation() {
@@ -322,6 +326,8 @@ public class MainView extends View {
         timeline.getKeyFrames().setAll(kf0, kf1);
         timeline.setOnFinished(e -> {
             mapView.flyTo(1., new MapPoint(MAP_POINT.getLatitude(), MAP_POINT.getLongitude()), 2.5);
+            settingsButton.setVisible(false);
+            settingsButton.setManaged(false);
             backToListButton.setVisible(true);
         });
         timeline.play();
@@ -338,7 +344,11 @@ public class MainView extends View {
         KeyFrame kf1 = new KeyFrame(Duration.millis(50), kvListView1, kvButtonBox1, kvAnchorY1);
 
         timeline.getKeyFrames().setAll(kf0, kf1);
-        timeline.setOnFinished(e -> backToListButton.setVisible(false));
+        timeline.setOnFinished(e -> {
+            backToListButton.setVisible(false);
+            settingsButton.setManaged(true);
+            settingsButton.setVisible(true);
+        });
         timeline.play();
     }
 
