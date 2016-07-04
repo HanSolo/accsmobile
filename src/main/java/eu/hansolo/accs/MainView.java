@@ -282,12 +282,6 @@ public class MainView extends View {
 
         task.stateProperty().addListener((o, ov, nv) -> {
             if (State.SUCCEEDED == nv) {
-                /* test
-                positionService.positionProperty().removeListener(positionChangeListener);
-                positionService = PlatformFactory.getPlatform().getPositionService();
-                positionService.positionProperty().addListener(positionChangeListener);
-                // test */
-
                 locationList.clear();
                 JSONArray jsonArray = task.getValue();
                 for (int i = 0 ; i < jsonArray.size() ; i++) { locationList.add(new JMapPoint(((JSONObject) jsonArray.get(i)))); }
