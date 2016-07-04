@@ -1,8 +1,7 @@
 package eu.hansolo.accs;
 
 import com.gluonhq.maps.MapLayer;
-import com.gluonhq.maps.MapPoint;
-import com.gluonhq.maps.MapPoint.MapPointEventListener;
+import com.gluonhq.maps.MapPointEventListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
@@ -48,7 +47,7 @@ public class LocationLayer extends MapLayer {
 
     @Override protected void layoutLayer() {
         for (Pair<JMapPoint, Circle> candidate : POINTS) {
-            JMapPoint point    = candidate.getKey();
+            JMapPoint point   = candidate.getKey();
             Circle   circle   = candidate.getValue();
             Point2D  mapPoint = baseMap.getMapPoint(point.getLatitude(), point.getLongitude());
             circle.setVisible(true);

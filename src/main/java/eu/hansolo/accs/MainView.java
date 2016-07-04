@@ -225,8 +225,8 @@ public class MainView extends View {
     }
 
     private void registerListeners() {
-        mapView.setOnZoomStarted(e -> mapView.removeLayer(locationLayer));
-        mapView.setOnZoomFinished(e -> mapView.addLayer(locationLayer));
+        //mapView.setOnZoomStarted(e -> mapView.removeLayer(locationLayer));
+        //mapView.setOnZoomFinished(e -> mapView.addLayer(locationLayer));
 
         anchorY.addListener(o -> AnchorPane.setBottomAnchor(mapView, anchorY.getValue()));
 
@@ -282,11 +282,11 @@ public class MainView extends View {
 
         task.stateProperty().addListener((o, ov, nv) -> {
             if (State.SUCCEEDED == nv) {
-                // test
+                /* test
                 positionService.positionProperty().removeListener(positionChangeListener);
                 positionService = PlatformFactory.getPlatform().getPositionService();
                 positionService.positionProperty().addListener(positionChangeListener);
-                // test
+                // test */
 
                 locationList.clear();
                 JSONArray jsonArray = task.getValue();
